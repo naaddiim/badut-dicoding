@@ -4,6 +4,7 @@ const RegisterUser = require('../../../Domains/users/entities/RegisterUser');
 const pool = require('../../database/postgres/pool');
 const ThreadRepositoryPostgres = require('../ThreadRepositoryPostgres');
 const CommentRepositoryPostgres = require('../CommentRepositoryPostgres');
+const ReplyRepositoryPostgres = require('../ReplyRepositoryPostgres');
 const UserRepositoryPostgres = require('../UserRepositoryPostgres');
 const NotFoundError = require('../../../Commons/exceptions/NotFoundError');
 
@@ -65,6 +66,7 @@ describe('ThreadRepositoryPostgres', () => {
             const fakeIdGenerator = () => "12345";
             const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
             const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, fakeIdGenerator);
+            const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, fakeIdGenerator);
 
             const addThread = {
                 user_id: "user-12345",
@@ -80,9 +82,18 @@ describe('ThreadRepositoryPostgres', () => {
             };
             const addedComment = await commentRepositoryPostgres.addComment(addComment);
 
-            // Get Thread, comment, and reply date
+            const addReply = {
+                user_id: "user-12345",
+                thread_id: "thread-12345",
+                comment_id: "comment-12345",
+                content: "Reply Pertama",
+            };
+            const addedReply = await replyRepositoryPostgres.addReply(addReply);
+
+
             const [getThread] = await ThreadsTableTestHelper.findThreadsById(addedThread.id);
             const [getComment] = await ThreadsTableTestHelper.findCommentsById(addedComment.id);
+            const [getReply] = await ThreadsTableTestHelper.findCommentsById(addedReply.id);
 
             const expectedThreadDetailsObject = {
                 id: "thread-12345",
@@ -96,6 +107,14 @@ describe('ThreadRepositoryPostgres', () => {
                         username: "dicoding",
                         content: "Komen Pertama",
                         date: getComment.date,
+                        replies: [
+                            {
+                                id: "reply-12345",
+                                username: "dicoding",
+                                content: "Reply Pertama",
+                                date: getReply.date,
+                            }
+                        ],
                     },
                 ],
             };
@@ -104,8 +123,7 @@ describe('ThreadRepositoryPostgres', () => {
             const { query, thread } = await threadRepositoryPostgres.getDetailThread({ thread_id });
 
             // Assert
-            expect(query).toHaveLength(1);
-            console.log(query.length);
+            expect(query).toHaveLength(2);
             expect(thread).toBeInstanceOf(Object);
             expect(thread.comments).toHaveLength(1);
             expect(thread).toStrictEqual(expectedThreadDetailsObject);

@@ -81,7 +81,7 @@ describe('CommentRepositoryPostgres', () => {
                 content: addComment.content,
                 owner: addComment.user_id,
             });
-            const replies = await ThreadsTableTestHelper.findReplyById('reply-99999');
+            const replies = await ThreadsTableTestHelper.findCommentsById('reply-99999');
             expect(replies).toHaveLength(1);
             expect(addedReply).toStrictEqual({
                 id: "reply-99999",
@@ -90,7 +90,7 @@ describe('CommentRepositoryPostgres', () => {
             });
         });
     });
-    describe('deleteComment function', () => {
+    describe('deleteReply function', () => {
         it('should delete comment and return message correctly', async () => {
             // Arrange
             const addThread = {
@@ -105,39 +105,43 @@ describe('CommentRepositoryPostgres', () => {
                 content: 'A new Comment of this thread'
             }
 
-            const deleteComment = {
+            const addReply = {
                 user_id: 'user-12345',
                 thread_id: 'thread-456789',
                 comment_id: 'comment-54321',
+                content: 'A new Reply of this comment'
+            }
+
+            const deleteReply = {
+                user_id: 'user-12345',
+                thread_id: 'thread-456789',
+                comment_id: 'comment-54321',
+                reply_id: 'reply-99999'
             }
 
             const fakeThreadIdGenerator = () => '456789'; // stub!
             const fakeCommentIdGenerator = () => '54321'; // stub!
+            const fakeReplyIdGenerator = () => '99999'; // stub!
             const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeThreadIdGenerator);
             const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, fakeCommentIdGenerator);
+            const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, fakeReplyIdGenerator);
 
             // Action
-            const addedThread = await threadRepositoryPostgres.addThread(addThread);
-            const addedComment = await commentRepositoryPostgres.addComment(addComment);
+            await threadRepositoryPostgres.addThread(addThread);
+            await commentRepositoryPostgres.addComment(addComment);
+            await replyRepositoryPostgres.addReply(addReply);
 
 
             // Assert
-            const threads = await ThreadsTableTestHelper.findThreadsById('thread-456789');
-            expect(threads).toHaveLength(1);
-            expect(addedThread).toStrictEqual({
-                id: "thread-456789",
-                owner: addThread.user_id,
-                title: addThread.title,
-            });
 
-            const oldComment = await ThreadsTableTestHelper.findCommentsById('comment-54321');
-            await commentRepositoryPostgres.deleteComment(deleteComment);
-            const newComment = await ThreadsTableTestHelper.findCommentsById('comment-54321');
+            const oldReply = await ThreadsTableTestHelper.findCommentsById('reply-99999');
+            await replyRepositoryPostgres.deleteReply(deleteReply);
+            const newReply = await ThreadsTableTestHelper.findCommentsById('reply-99999');
 
-            expect(oldComment).toHaveLength(1);
-            expect(oldComment[0].is_delete).toEqual(false);
-            expect(newComment).toHaveLength(1);
-            expect(newComment[0].is_delete).toEqual(true);
+            expect(oldReply).toHaveLength(1);
+            expect(oldReply[0].is_delete).toEqual(false);
+            expect(newReply).toHaveLength(1);
+            expect(newReply[0].is_delete).toEqual(true);
 
         });
     });

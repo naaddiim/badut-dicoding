@@ -1,64 +1,146 @@
 const DetailThread = require('../DetailThread');
 
-describe("DetailThread response entities", () => {
-    it("Should create correct details of thread object properly", () => {
+describe("GetThreadDetails response entities", () => {
+    it("Should create the right details of thread", () => {
         // Arrange
         const queryResult = [
             {
-                // t = threads, u = users, c = comments
                 t_id: "thread-12345",
                 t_title: "judul thread",
                 t_body: "body thread",
                 t_date: "2023-25-1",
                 t_u_username: "dicoding",
-                c_id: "comment-12345",
-                c_u_username: "badutKelas",
+                c_id: "comment-45678",
+                c_content: "komen pertama",
                 c_date: "2023-25-1",
-                c_content: "Komen Pertama",
                 c_is_delete: false,
+                c_reply_comment_id: null,
+                c_username: "dicoding",
             },
             {
-                // t = threads, u = users, c = comments
                 t_id: "thread-12345",
                 t_title: "judul thread",
                 t_body: "body thread",
                 t_date: "2023-25-1",
                 t_u_username: "dicoding",
-                c_id: "comment-456789",
-                c_u_username: "dicoding",
-                c_date: "2023-29-1",
-                c_content: "Komen Kedua",
-                c_is_delete: true,
+                c_id: "reply-12345",
+                c_content: "reply pertama",
+                c_date: "2023-25-1",
+                c_is_delete: false,
+                c_reply_comment_id: "comment-45678",
+                c_username: "badut kelas",
             },
         ];
-        const expectedThreadObject = {
+        const expectedDetailThread = {
             id: "thread-12345",
+            username: "dicoding",
             title: "judul thread",
             body: "body thread",
             date: "2023-25-1",
-            username: "dicoding",
             comments: [
                 {
-                    id: "comment-12345",
-                    username: "badutKelas",
-                    date: "2023-25-1",
-                    content: "Komen Pertama",
-                },
-                {
-                    id: "comment-456789",
+                    id: "comment-45678",
                     username: "dicoding",
-                    date: "2023-29-1",
-                    content: "**komentar telah dihapus**",
+                    content: "komen pertama",
+                    date: "2023-25-1",
+                    replies: [
+                        {
+                            id: "reply-12345",
+                            username: "badut kelas",
+                            content: "reply pertama",
+                            date: "2023-25-1",
+                        },
+                    ],
                 },
             ],
         };
 
         // Action
         const { query, thread } = new DetailThread(queryResult);
-        console.log(thread);
 
         // Assert
-        expect(query).toStrictEqual(query);
-        expect(thread).toStrictEqual(expectedThreadObject);
+        expect(query).toStrictEqual(queryResult);
+        expect(thread).toStrictEqual(expectedDetailThread);
+    });
+
+    it("Should change is_delete value when its get deleted", () => {
+        // Arrange
+        const queryResult = [
+            {
+                t_id: "thread-12345",
+                t_title: "judul thread",
+                t_body: "body thread",
+                t_date: "2023-25-1",
+                t_u_username: "dicoding",
+                c_id: "comment-45678",
+                c_content: "komen pertama",
+                c_date: "2023-25-1",
+                c_is_delete: false,
+                c_reply_comment_id: null,
+                c_username: "dicoding",
+            },
+            {
+                t_id: "thread-12345",
+                t_title: "judul thread",
+                t_body: "body thread",
+                t_date: "2023-25-1",
+                t_u_username: "dicoding",
+                c_id: "reply-12345",
+                c_content: "reply pertama",
+                c_date: "2023-25-1",
+                c_is_delete: false,
+                c_reply_comment_id: "comment-45678",
+                c_username: "badut kelas",
+            },
+            {
+                t_id: "thread-12345",
+                t_title: "judul thread",
+                t_body: "body thread",
+                t_date: "2023-25-1",
+                t_u_username: "dicoding",
+                c_id: "reply-45678",
+                c_content: "reply kedua",
+                c_date: "2023-25-1",
+                c_is_delete: true,
+                c_reply_comment_id: "comment-45678",
+                c_username: "orang Kedua",
+            },
+        ];
+        const expectedDetailThread = {
+            id: "thread-12345",
+            username: "dicoding",
+            title: "judul thread",
+            body: "body thread",
+            date: "2023-25-1",
+            comments: [
+                {
+                    id: "comment-45678",
+                    username: "dicoding",
+                    content: "komen pertama",
+                    date: "2023-25-1",
+                    replies: [
+                        {
+                            id: "reply-12345",
+                            username: "badut kelas",
+                            content: "reply pertama",
+                            date: "2023-25-1",
+                        },
+                        {
+                            id: "reply-45678",
+                            username: "orang Kedua",
+                            content: "**balasan telah dihapus**",
+                            date: "2023-25-1",
+                        },
+                    ],
+                },
+            ],
+        };
+
+        // Action
+        const { query, thread } = new DetailThread(queryResult);
+
+        // Assert
+        expect(query).toStrictEqual(queryResult);
+        expect(thread).toStrictEqual(expectedDetailThread);
     });
 });

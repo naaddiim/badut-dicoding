@@ -23,6 +23,7 @@ describe('DeleteCommentUseCase', () => {
 
         /** mocking needed function */
         mockCommentsRepository.isThreadExist = jest.fn().mockImplementation(() => Promise.resolve());
+        mockCommentsRepository.isCommentExist = jest.fn().mockImplementation(() => Promise.resolve());
         mockCommentsRepository.isTheRightOwner = jest.fn().mockImplementation(() => Promise.resolve());
         mockCommentsRepository.deleteComment = jest.fn()
             .mockImplementation(() => Promise.resolve(expectedDeletedComment));

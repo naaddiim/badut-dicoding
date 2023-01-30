@@ -28,6 +28,10 @@ exports.up = (pgm) => {
             type: 'BOOLEAN',
             notNull: true,
         },
+        reply_on_comment: {
+            type: "VARCHAR(50)",
+            default: null,
+          },
     });
 };
 

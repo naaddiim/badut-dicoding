@@ -7,14 +7,14 @@ const routes = (handler) => ([
       auth: "apiforum_jwt",
     },
   },
-  // {
-  //   method: 'DELETE',
-  //   path: '/threads/{threadId}/comments/{commentId}',
-  //   handler: handler.deleteCommentHandler,
-  //   options: {
-  //     auth: "apiforum_jwt",
-  //   },
-  // },
+  {
+    method: 'DELETE',
+    path: '/threads/{threadId}/comments/{commentId}/replies/{replyId}',
+    handler: handler.deleteReplyHandler,
+    options: {
+      auth: "apiforum_jwt",
+    },
+  },
 
 ]);
 

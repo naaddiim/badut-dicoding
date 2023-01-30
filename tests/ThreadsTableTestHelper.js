@@ -30,15 +30,6 @@ const ThreadsTableTestHelper = {
         const result = await pool.query(query);
         return result.rows;
     },
-    async findReplyById(id) {
-        const query = {
-            text: 'SELECT * FROM replies WHERE id = $1',
-            values: [id],
-        };
-
-        const result = await pool.query(query);
-        return result.rows;
-    },
     async cleanTable() {
         await pool.query("TRUNCATE TABLE threads CASCADE");
     },
