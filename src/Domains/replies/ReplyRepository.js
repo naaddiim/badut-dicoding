@@ -3,15 +3,7 @@ class ReplyRepository {
         throw new Error('REPLY_REPOSITORY.METHOD_NOT_IMPLEMENTED');
     }
 
-    async isThreadExist({ thread_id }) {
-        throw new Error('REPLY_REPOSITORY.METHOD_NOT_IMPLEMENTED');
-    }
-
     async isTheRightOwner({ reply_id, user_id }) {
-        throw new Error('REPLY_REPOSITORY.METHOD_NOT_IMPLEMENTED');
-    }
-
-    async isCommentExist({ comment_id }) {
         throw new Error('REPLY_REPOSITORY.METHOD_NOT_IMPLEMENTED');
     }
 

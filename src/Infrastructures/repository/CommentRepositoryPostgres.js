@@ -22,17 +22,6 @@ class CommentRepositoryPostgres extends CommentRepository {
     return result.rows[0];
   }
 
-  async isThreadExist({ thread_id }) {
-    const query = {
-      text: `SELECT id FROM threads t WHERE t.id = $1`,
-      values: [thread_id],
-    };
-    const result = await this._pool.query(query);
-    if (!result.rowCount) {
-      throw new NotFoundError("Thread tidak ditemukan");
-    }
-  }
-
   async isCommentExist({ comment_id }) {
     const query = {
       text: `SELECT id FROM comments t WHERE t.id = $1`,
@@ -65,7 +54,7 @@ class CommentRepositoryPostgres extends CommentRepository {
     };
     const result = await this._pool.query(query);
     if (!result.rowCount) {
-      throw new NotFoundError("Thread tidak ditemukan");
+      throw new NotFoundError("Comment tidak ditemukan");
     }
   }
 }

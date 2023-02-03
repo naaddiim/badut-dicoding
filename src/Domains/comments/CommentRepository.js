@@ -3,10 +3,6 @@ class CommentRepository {
         throw new Error('COMMENT_REPOSITORY.METHOD_NOT_IMPLEMENTED');
     }
 
-    async isThreadExist({ thread_id }) {
-        throw new Error('COMMENT_REPOSITORY.METHOD_NOT_IMPLEMENTED');
-    }
-
     async isCommentExist({ comment_id }) {
         throw new Error('COMMENT_REPOSITORY.METHOD_NOT_IMPLEMENTED');
     }

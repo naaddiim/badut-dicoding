@@ -17,10 +17,20 @@ class ThreadRepositoryPostgres extends ThreadRepository {
             text: 'INSERT INTO threads VALUES($1, $2, $3, $4, $5) RETURNING id, title, owner',
             values: [id, title, body, date, user_id],
         };
-
         const result = await this._pool.query(query);
         return result.rows[0];
     }
+    
+    async isThreadExist({ thread_id }) {
+        const query = {
+          text: `SELECT id FROM threads t WHERE t.id = $1`,
+          values: [thread_id],
+        };
+        const result = await this._pool.query(query);
+        if (!result.rowCount) {
+          throw new NotFoundError("Thread tidak ditemukan");
+        }
+      }
 
     async getDetailThread({ thread_id }) {
         const query = {

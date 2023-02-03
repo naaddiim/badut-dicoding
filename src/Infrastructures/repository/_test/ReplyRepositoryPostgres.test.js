@@ -1,3 +1,5 @@
+const NotFoundError = require('../../../Commons/exceptions/NotFoundError');
+const AuthorizationError = require('../../../Commons/exceptions/AuthorizationError');
 const UsersTableTestHelper = require('../../../../tests/UsersTableTestHelper');
 const ThreadsTableTestHelper = require('../../../../tests/ThreadsTableTestHelper');
 const RegisterUser = require('../../../Domains/users/entities/RegisterUser');
@@ -98,42 +100,34 @@ describe('CommentRepositoryPostgres', () => {
                 title: 'A New Thread',
                 body: 'A New Body of Thread',
             };
-
             const addComment = {
                 user_id: 'user-12345',
                 thread_id: 'thread-456789',
                 content: 'A new Comment of this thread'
             }
-
             const addReply = {
                 user_id: 'user-12345',
                 thread_id: 'thread-456789',
                 comment_id: 'comment-54321',
                 content: 'A new Reply of this comment'
             }
-
             const deleteReply = {
                 user_id: 'user-12345',
                 thread_id: 'thread-456789',
                 comment_id: 'comment-54321',
                 reply_id: 'reply-99999'
             }
-
             const fakeThreadIdGenerator = () => '456789'; // stub!
             const fakeCommentIdGenerator = () => '54321'; // stub!
             const fakeReplyIdGenerator = () => '99999'; // stub!
             const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeThreadIdGenerator);
             const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, fakeCommentIdGenerator);
             const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, fakeReplyIdGenerator);
-
             // Action
             await threadRepositoryPostgres.addThread(addThread);
             await commentRepositoryPostgres.addComment(addComment);
             await replyRepositoryPostgres.addReply(addReply);
-
-
             // Assert
-
             const oldReply = await ThreadsTableTestHelper.findCommentsById('reply-99999');
             await replyRepositoryPostgres.deleteReply(deleteReply);
             const newReply = await ThreadsTableTestHelper.findCommentsById('reply-99999');
@@ -142,7 +136,133 @@ describe('CommentRepositoryPostgres', () => {
             expect(oldReply[0].is_delete).toEqual(false);
             expect(newReply).toHaveLength(1);
             expect(newReply[0].is_delete).toEqual(true);
-
+   
+            
+        });
+        it("should throw Not Found Error when thread id || comment id is not exist", async () => {
+            // Arrange
+            const addThread = {
+                user_id: 'user-12345',
+                title: 'A New Thread',
+                body: 'A New Body of Thread',
+            };
+            const addComment = {
+                user_id: 'user-12345',
+                thread_id: 'thread-456789',
+                content: 'A new Comment of this thread'
+            }
+            const addReply = {
+                user_id: 'user-12345',
+                thread_id: 'thread-456789',
+                comment_id: 'comment-54321',
+                content: 'A new Reply of this comment'
+            }
+            const deleteReply = {
+                user_id: 'user-12345',
+                thread_id: 'thread-456789',
+                comment_id: 'comment-35678',
+                reply_id: 'reply-99999'
+            }
+            const fakeThreadIdGenerator = () => '456789'; // stub!
+            const fakeCommentIdGenerator = () => '54321'; // stub!
+            const fakeReplyIdGenerator = () => '99999'; // stub!
+            const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeThreadIdGenerator);
+            const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, fakeCommentIdGenerator);
+            const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, fakeReplyIdGenerator);
+            // Action
+            await threadRepositoryPostgres.addThread(addThread);
+            await commentRepositoryPostgres.addComment(addComment);
+            await replyRepositoryPostgres.addReply(addReply);
+            // Assert
+            const oldReply = await ThreadsTableTestHelper.findCommentsById('reply-99999');
+            expect(oldReply).toHaveLength(1);
+                await expect(
+                    replyRepositoryPostgres.deleteReply(deleteReply)
+                ).rejects.toThrow(NotFoundError);
+        });
+        it("should throw Not Found Error when reply id is not exist", async () => {
+            // Arrange
+            const addThread = {
+                user_id: 'user-12345',
+                title: 'A New Thread',
+                body: 'A New Body of Thread',
+            };
+            const addComment = {
+                user_id: 'user-12345',
+                thread_id: 'thread-456789',
+                content: 'A new Comment of this thread'
+            }
+            const addReply = {
+                user_id: 'user-12345',
+                thread_id: 'thread-456789',
+                comment_id: 'comment-54321',
+                content: 'A new Reply of this comment'
+            }
+            const deleteReply = {
+                user_id: 'user-12345',
+                thread_id: 'thread-456789',
+                comment_id: 'comment-54321',
+                reply_id: 'reply-56789'
+            }
+            const fakeThreadIdGenerator = () => '456789'; // stub!
+            const fakeCommentIdGenerator = () => '54321'; // stub!
+            const fakeReplyIdGenerator = () => '99999'; // stub!
+            const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeThreadIdGenerator);
+            const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, fakeCommentIdGenerator);
+            const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, fakeReplyIdGenerator);
+            // Action
+            await threadRepositoryPostgres.addThread(addThread);
+            await commentRepositoryPostgres.addComment(addComment);
+            await replyRepositoryPostgres.addReply(addReply);
+            // Assert
+            const oldReply = await ThreadsTableTestHelper.findCommentsById('reply-99999');
+        
+                expect(oldReply).toHaveLength(1);
+                await expect(
+                    replyRepositoryPostgres.isReplyExist(deleteReply.reply_id)
+                ).rejects.toThrow(NotFoundError); 
+        });
+        it("should throw Authorization Error when user id is not correct", async () => {
+            // Arrange
+            const addThread = {
+                user_id: 'user-12345',
+                title: 'A New Thread',
+                body: 'A New Body of Thread',
+            };
+            const addComment = {
+                user_id: 'user-12345',
+                thread_id: 'thread-456789',
+                content: 'A new Comment of this thread'
+            }
+            const addReply = {
+                user_id: 'user-12345',
+                thread_id: 'thread-456789',
+                comment_id: 'comment-54321',
+                content: 'A new Reply of this comment'
+            }
+            const deleteReply = {
+                user_id: 'user-56789',
+                thread_id: 'thread-456789',
+                comment_id: 'comment-54321',
+                reply_id: 'reply-56789'
+            }
+            const fakeThreadIdGenerator = () => '456789'; // stub!
+            const fakeCommentIdGenerator = () => '54321'; // stub!
+            const fakeReplyIdGenerator = () => '99999'; // stub!
+            const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeThreadIdGenerator);
+            const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, fakeCommentIdGenerator);
+            const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, fakeReplyIdGenerator);
+            // Action
+            await threadRepositoryPostgres.addThread(addThread);
+            await commentRepositoryPostgres.addComment(addComment);
+            await replyRepositoryPostgres.addReply(addReply);
+            // Assert
+            const oldReply = await ThreadsTableTestHelper.findCommentsById('reply-99999');
+             
+                expect(oldReply).toHaveLength(1);
+                await expect(
+                    replyRepositoryPostgres.isTheRightOwner(deleteReply.user_id)
+                ).rejects.toThrow(AuthorizationError); 
         });
     });
 });

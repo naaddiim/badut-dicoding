@@ -21,29 +21,6 @@ class ReplyRepositoryPostgres extends ReplyRepository {
         const result = await this._pool.query(query);
         return result.rows[0];
     }
-
-    async isThreadExist({ thread_id }) {
-        const query = {
-            text: `SELECT id FROM threads t WHERE t.id = $1`,
-            values: [thread_id],
-        };
-        const result = await this._pool.query(query);
-        if (!result.rowCount) {
-            throw new NotFoundError("Thread tidak ditemukan");
-        }
-    }
-
-    async isCommentExist({ comment_id }) {
-        const query = {
-            text: `SELECT id FROM comments t WHERE t.id = $1`,
-            values: [comment_id],
-        };
-        const result = await this._pool.query(query);
-        if (!result.rowCount) {
-            throw new NotFoundError("Komen tidak ditemukan");
-        }
-    }
-
     async isReplyExist({ reply_id }) {
         const query = {
             text: `SELECT id FROM comments t WHERE t.id = $1`,
@@ -67,12 +44,11 @@ class ReplyRepositoryPostgres extends ReplyRepository {
     }
 
     async deleteReply({ user_id, thread_id, comment_id, reply_id }) {
-        const date = new Date();
         const query = {
             text: `UPDATE comments 
-      SET is_delete = $1, date = $2 
-      WHERE id = $3 AND thread_id = $4 AND owner = $5 AND reply_on_comment = $6`,
-            values: [true, date, reply_id, thread_id, user_id, comment_id],
+      SET is_delete = $1
+      WHERE id = $2 AND thread_id = $3 AND owner = $4 AND reply_on_comment = $5`,
+            values: [true, reply_id, thread_id, user_id, comment_id],
         };
         const result = await this._pool.query(query);
         if (!result.rowCount) {

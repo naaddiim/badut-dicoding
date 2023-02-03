@@ -1,3 +1,5 @@
+const NotFoundError = require('../../../Commons/exceptions/NotFoundError');
+const AuthorizationError = require('../../../Commons/exceptions/AuthorizationError');
 const UsersTableTestHelper = require('../../../../tests/UsersTableTestHelper');
 const ThreadsTableTestHelper = require('../../../../tests/ThreadsTableTestHelper');
 const RegisterUser = require('../../../Domains/users/entities/RegisterUser');
@@ -122,6 +124,143 @@ describe('CommentRepositoryPostgres', () => {
             expect(newComment).toHaveLength(1);
             expect(newComment[0].is_delete).toEqual(true);
 
+        });
+        it("should throw Not Found Error when thread_id not exist", async () => {
+            // Arrange
+            const fakeIdGenerator = () => "12345";
+            const threadRepositoryPostgres = new ThreadRepositoryPostgres(
+                pool,
+                fakeIdGenerator
+            );
+            const commentsRepositoryPostgres = new CommentRepositoryPostgres(
+                pool,
+                fakeIdGenerator
+            );
+
+            // add thread
+            const addThread = {
+                user_id: "user-12345",
+                title: "new test title",
+                body: "new test body",
+            };
+            await threadRepositoryPostgres.addThread(addThread);
+
+            // add comment
+            const addComment = {
+                user_id: "user-12345",
+                thread_id: "thread-12345",
+                content: "new comment on thread thread-12345 #1",
+            };
+
+            await commentsRepositoryPostgres.addComment(addComment);
+            const commentsBeforeDelete = await ThreadsTableTestHelper.findCommentsById(
+                "comment-12345"
+            );
+            // delete not exist comment
+            const deleteComment = {
+                user_id: 'user-12345',
+                thread_id: 'thread-56789',
+                comment_id: "comment-12345",
+            };
+            //Assert
+            expect(commentsBeforeDelete).toHaveLength(1);
+            await expect(
+                commentsRepositoryPostgres.deleteComment(deleteComment)
+            ).rejects.toThrow(NotFoundError);
+        });
+        it("should throw Not Found Error when comment_id not exist", async () => {
+            // Arrange
+            const fakeIdGenerator = () => "12345";
+            const threadRepositoryPostgres = new ThreadRepositoryPostgres(
+                pool,
+                fakeIdGenerator
+            );
+            const commentsRepositoryPostgres = new CommentRepositoryPostgres(
+                pool,
+                fakeIdGenerator
+            );
+
+            // add thread
+            const addThread = {
+                user_id: "user-12345",
+                title: "new test title",
+                body: "new test body",
+            };
+            await threadRepositoryPostgres.addThread(addThread);
+
+            // add comment
+            const addComment = {
+                user_id: "user-12345",
+                thread_id: "thread-12345",
+                content: "new comment on thread thread-12345 #1",
+            };
+
+            await commentsRepositoryPostgres.addComment(addComment);
+            const commentsBeforeDelete = await ThreadsTableTestHelper.findCommentsById(
+                "comment-12345"
+            );
+            // delete not exist comment
+            const deleteComment = {
+                user_id: 'user-12345',
+                thread_id: 'thread-12345',
+                comment_id: "comment-56789",
+            };
+            //Assert
+            expect(commentsBeforeDelete).toHaveLength(1);
+            await expect(
+                commentsRepositoryPostgres.isCommentExist(deleteComment.comment_id)
+            ).rejects.toThrow(NotFoundError);
+        });
+        it("should throw Authorization Error when user is not correct", async () => {
+            // Arrange
+            const fakeIdGenerator = () => "12345";
+            const threadRepositoryPostgres = new ThreadRepositoryPostgres(
+                pool,
+                fakeIdGenerator
+            );
+            const commentsRepositoryPostgres = new CommentRepositoryPostgres(
+                pool,
+                fakeIdGenerator
+            );
+
+            // add thread
+            const addThread = {
+                user_id: "user-12345",
+                title: "new test title",
+                body: "new test body",
+            };
+            await threadRepositoryPostgres.addThread(addThread);
+
+            // add comment
+            const addComment = {
+                user_id: "user-12345",
+                thread_id: "thread-12345",
+                content: "new comment on thread thread-12345 #1",
+            };
+
+            await commentsRepositoryPostgres.addComment(addComment);
+            const comments = await ThreadsTableTestHelper.findCommentsById(
+                "comment-12345"
+            );
+
+            // check if its the right owner
+            const isTheRightOwner = {
+                user_id: 'user-56789',
+                comment_id: "comment-12345",
+            };
+
+            // delete not exist comment
+            const deleteComment = {
+                user_id: 'user-56789',
+                thread_id: 'thread-12345',
+                comment_id: "comment-67890",
+            };
+
+            //Assert
+            expect(comments).toHaveLength(1);
+            await expect(
+                commentsRepositoryPostgres.isTheRightOwner(deleteComment.user_id)
+            ).rejects.toThrow(AuthorizationError);
         });
     });
 });
