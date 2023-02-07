@@ -1,5 +1,7 @@
+const Thread = require('../../../../Domains/threads/entities/Thread');
+const Comment = require('../../../../Domains/comments/entities/Comment');
+const Reply = require('../../../../Domains/replies/entities/Reply');
 const ThreadRepository = require('../../../../Domains/threads/ThreadRepository');
-const DetailThread = require('../../../../Domains/threads/entities/DetailThread');
 const DetailThreadUseCase = require('../DetailThreadUseCase');
 
 describe('DetailThreadUseCase', () => {
@@ -11,16 +13,19 @@ describe('DetailThreadUseCase', () => {
         const useCasePayload = {
             thread_id: "somerandomThreadId",
         };
-        const expectedQueryResult = [
+        const threadDate = new Date();
+        const commentDate = new Date();
+        const replyDate = new Date();
+        const queryResult = [
             {
                 t_id: "thread-12345",
                 t_title: "judul thread",
                 t_body: "body thread",
-                t_date: "2023-25-1",
+                t_date: threadDate,
                 t_u_username: "dicoding",
                 c_id: "comment-45678",
                 c_content: "komen pertama",
-                c_date: "2023-25-1",
+                c_date: commentDate,
                 c_is_delete: false,
                 c_reply_comment_id: null,
                 c_username: "dicoding",
@@ -29,46 +34,84 @@ describe('DetailThreadUseCase', () => {
                 t_id: "thread-12345",
                 t_title: "judul thread",
                 t_body: "body thread",
-                t_date: "2023-25-1",
+                t_date: threadDate,
+                t_u_username: "dicoding",
+                c_id: "comment-99999",
+                c_content: "komen kedua",
+                c_date: commentDate,
+                c_is_delete: true,
+                c_reply_comment_id: null,
+                c_username: "badut kelas",
+            },
+            {
+                t_id: "thread-12345",
+                t_title: "judul thread",
+                t_body: "body thread",
+                t_date: threadDate,
                 t_u_username: "dicoding",
                 c_id: "reply-12345",
                 c_content: "reply pertama",
-                c_date: "2023-25-1",
+                c_date: replyDate,
                 c_is_delete: false,
                 c_reply_comment_id: "comment-45678",
                 c_username: "badut kelas",
             },
+            {
+                t_id: "thread-12345",
+                t_title: "judul thread",
+                t_body: "body thread",
+                t_date: threadDate,
+                t_u_username: "dicoding",
+                c_id: "reply-45678",
+                c_content: "reply kedua",
+                c_date: replyDate,
+                c_is_delete: true,
+                c_reply_comment_id: "comment-45678",
+                c_username: "orang Kedua",
+            },
         ];
-        const expectedThreadDetail = {
+        const expectedDetailThread = new Thread({
             id: "thread-12345",
             username: "dicoding",
             title: "judul thread",
             body: "body thread",
-            date: "2023-25-1",
+            date: threadDate,
             comments: [
-                {
+                new Comment({
                     id: "comment-45678",
                     username: "dicoding",
                     content: "komen pertama",
-                    date: "2023-25-1",
+                    date: commentDate,
                     replies: [
-                        {
+                        new Reply({
                             id: "reply-12345",
                             username: "badut kelas",
                             content: "reply pertama",
-                            date: "2023-25-1",
-                        },
+                            date: replyDate,
+                        }),
+                        new Reply({
+                            id: "reply-45678",
+                            username: "orang Kedua",
+                            content: "**balasan telah dihapus**",
+                            date: replyDate,
+                        }),
                     ],
-                },
+                }),
+                new Comment({
+                    id: "comment-99999",
+                    username: "badut kelas",
+                    content: "**komentar telah dihapus**",
+                    date: commentDate,
+                    replies: [],
+                }),
             ],
-        };
-
+        });
 
         /** creating dependency of use case */
         const mockThreadRepository = new ThreadRepository();
 
         /** mocking needed function */
-        mockThreadRepository.getDetailThread = jest.fn().mockImplementation(() => Promise.resolve(new DetailThread(expectedQueryResult)));
+        mockThreadRepository.getDetailThread = jest.fn().mockImplementation(() => Promise.resolve(queryResult));
 
         /** creating use case instance */
         const detailThreadUseCase = new DetailThreadUseCase({
@@ -76,11 +119,12 @@ describe('DetailThreadUseCase', () => {
         });
 
         // Action
-        const { query, thread } = await detailThreadUseCase.execute(useCasePayload);
+        const query = await detailThreadUseCase.execute(useCasePayload);
+        const result = detailThreadUseCase.mapValue(query);
 
         // Assert
-        expect(query).toHaveLength(2);
-        expect(thread).toStrictEqual(expectedThreadDetail);
+        expect(query).toHaveLength(4);
+        expect(result).toStrictEqual(expectedDetailThread);
         expect(mockThreadRepository.getDetailThread).toHaveBeenCalledWith({ thread_id: useCasePayload.thread_id, });
     });
 });

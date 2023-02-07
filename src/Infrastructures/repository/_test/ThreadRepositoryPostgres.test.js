@@ -61,7 +61,7 @@ describe('ThreadRepositoryPostgres', () => {
     });
 
     describe('DetailThread function', () => {
-        it('should get the detail of a thread and return its value correctly', async () => {
+        it('should get the right query and return its value correctly', async () => {
             // Arrange
             const fakeIdGenerator = () => "12345";
             const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
@@ -95,44 +95,48 @@ describe('ThreadRepositoryPostgres', () => {
             const [getComment] = await ThreadsTableTestHelper.findCommentsById(addedComment.id);
             const [getReply] = await ThreadsTableTestHelper.findCommentsById(addedReply.id);
 
-            const expectedThreadDetailsObject = {
-                id: "thread-12345",
-                username: "dicoding",
-                title: "judul thread",
-                body: "body thread",
-                date: getThread.date,
-                comments: [
-                    {
-                        id: "comment-12345",
-                        username: "dicoding",
-                        content: "Komen Pertama",
-                        date: getComment.date,
-                        replies: [
-                            {
-                                id: "reply-12345",
-                                username: "dicoding",
-                                content: "Reply Pertama",
-                                date: getReply.date,
-                            }
-                        ],
-                    },
-                ],
-            };
+            const expectedThreadDetailQuery = [
+                {
+                    t_id: 'thread-12345',
+                    t_title: 'judul thread',
+                    t_body: 'body thread',
+                    t_date: getThread.date,
+                    t_u_username: 'dicoding',
+                    c_id: 'comment-12345',
+                    c_content: 'Komen Pertama',
+                    c_date: getComment.date,
+                    c_is_delete: false,
+                    c_reply_comment_id: null,
+                    c_username: 'dicoding'
+                },
+                {
+                    t_id: 'thread-12345',
+                    t_title: 'judul thread',
+                    t_body: 'body thread',
+                    t_date: getThread.date,
+                    t_u_username: 'dicoding',
+                    c_id: 'reply-12345',
+                    c_content: 'Reply Pertama',
+                    c_date: getReply.date,
+                    c_is_delete: false,
+                    c_reply_comment_id: 'comment-12345',
+                    c_username: 'dicoding'
+                }
+            ];
             // Action
-            const { id: thread_id } = expectedThreadDetailsObject;
-            const { query, thread } = await threadRepositoryPostgres.getDetailThread({ thread_id });
-
+            const { t_id: thread_id } = expectedThreadDetailQuery[0];
+            const query = await threadRepositoryPostgres.getDetailThread({ thread_id });
             // Assert
             expect(query).toHaveLength(2);
-            expect(thread).toBeInstanceOf(Object);
-            expect(thread.comments).toHaveLength(1);
-            expect(thread).toStrictEqual(expectedThreadDetailsObject);
+            expect(query).toBeInstanceOf(Object);
+            expect(query).toStrictEqual(expectedThreadDetailQuery);
         });
         it('should throw Not FOund Error when thread_id is not correct', async () => {
             // Arrange
             const fakeIdGenerator = () => "12345";
             const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
             const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, fakeIdGenerator);
+            const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, fakeIdGenerator);
 
             const addThread = {
                 user_id: "user-12345",
@@ -148,28 +152,56 @@ describe('ThreadRepositoryPostgres', () => {
             };
             const addedComment = await commentRepositoryPostgres.addComment(addComment);
 
-            // Get Thread, comment, and reply date
-            const [getThread] = await ThreadsTableTestHelper.findThreadsById(addedThread.id);
-            const [getComment] = await ThreadsTableTestHelper.findCommentsById(addedComment.id);
+            const addReply = {
+                user_id: "user-12345",
+                thread_id: "thread-12345",
+                comment_id: "comment-12345",
+                content: "Reply Pertama",
+            };
+            const addedReply = await replyRepositoryPostgres.addReply(addReply);
 
-            const expectedThreadDetailsObject = {
-                id: "thread-456789",
-                username: "dicoding",
+            // Action - Assert
+            const thread_id = 'thread-12346'
+            await expect(() => threadRepositoryPostgres.getDetailThread({ thread_id })).rejects.toThrow(NotFoundError);
+        });
+    });
+    describe('isThreadExist function', () => {
+        it('should confirm thread does exist', async () => {
+            // Arrange
+            const fakeIdGenerator = () => "12345";
+            const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
+
+            const addThread = {
+                user_id: "user-12345",
                 title: "judul thread",
                 body: "body thread",
-                date: getThread.date,
-                comments: [
-                    {
-                        id: "comment-12345",
-                        username: "dicoding",
-                        content: "Komen Pertama",
-                        date: getComment.date,
-                    },
-                ],
             };
-            // Action - Assert
-            const { id: thread_id } = expectedThreadDetailsObject;
-            await expect(() => threadRepositoryPostgres.getDetailThread({ thread_id })).rejects.toThrow(NotFoundError);
+
+            await threadRepositoryPostgres.addThread(addThread);
+
+            await expect(
+                threadRepositoryPostgres.isThreadExist({
+                    thread_id: "thread-12345",
+                })
+            ).resolves.not.toThrow(NotFoundError);
+        });
+        it('should throw Not FOund Error when thread_id is not correct', async () => {
+            // Arrange
+            const fakeIdGenerator = () => "12345";
+            const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
+
+            const addThread = {
+                user_id: "user-12345",
+                title: "judul thread",
+                body: "body thread",
+            };
+            await threadRepositoryPostgres.addThread(addThread);
+            await expect(
+                threadRepositoryPostgres.isThreadExist({
+                    thread_id: "thread-12346",
+                })
+            ).rejects.toThrow(NotFoundError);
+
         });
     });
 });

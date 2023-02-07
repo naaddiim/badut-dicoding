@@ -29,6 +29,12 @@ DomainErrorTranslator._directories = {
   'ADDED_COMMENT.NOT_MEET_DATA_TYPE_SPECIFICATION': new InvariantError('tipe added comment masih salah'),
   'ADDED_THREAD.NOT_CONTAIN_NEEDED_PROPERTY': new InvariantError('masih ada property yang kurang'),
   'ADDED_THREAD.NOT_MEET_DATA_TYPE_SPECIFICATION': new InvariantError('tipe added thread masih salah'),
+  'THREAD_ENTITY.NOT_CONTAIN_NEEDED_PROPERTY': new InvariantError('masih ada property yang kurang'),
+  'THREAD_ENTITY.NOT_MEET_DATA_TYPE_SPECIFICATION': new InvariantError('tipe thread masih salah'),
+  'COMMENT_ENTITY.NOT_CONTAIN_NEEDED_PROPERTY': new InvariantError('masih ada property yang kurang'),
+  'COMMENT_ENTITY.NOT_MEET_DATA_TYPE_SPECIFICATION': new InvariantError('tipe comment masih salah'),
+  'REPLY_ENTITY.NOT_CONTAIN_NEEDED_PROPERTY': new InvariantError('masih ada property yang kurang'),
+  'REPLY_ENTITY.NOT_MEET_DATA_TYPE_SPECIFICATION': new InvariantError('tipe reply masih salah'),
 };
 
 module.exports = DomainErrorTranslator;

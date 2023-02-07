@@ -32,8 +32,7 @@ describe('DeleteReplyUseCase', () => {
         mockCommentsRepository.isCommentExist = jest.fn().mockImplementation(() => Promise.resolve());
         mockRepliesRepository.isReplyExist = jest.fn().mockImplementation(() => Promise.resolve());
         mockRepliesRepository.isTheRightOwner = jest.fn().mockImplementation(() => Promise.resolve());
-        mockRepliesRepository.deleteReply = jest.fn()
-            .mockImplementation(() => Promise.resolve(expectedDeletedReply));
+        mockRepliesRepository.deleteReply = jest.fn().mockImplementation(() => Promise.resolve());
 
         /** creating use case instance */
         const deleteReplyUseCase = new DeleteReplyUseCase({
@@ -44,10 +43,26 @@ describe('DeleteReplyUseCase', () => {
 
         // Action
         const { user_id, thread_id, comment_id, reply_id } = useCasePayload;
-        const deletedReply = await deleteReplyUseCase.execute(user_id, thread_id, comment_id, reply_id);
+        await deleteReplyUseCase.execute(user_id, thread_id, comment_id, reply_id);
 
         // Assert
-        expect(deletedReply).toStrictEqual(expectedDeletedReply);
+        expect(mockThreadsRepository.isThreadExist).toHaveBeenCalledWith({
+            thread_id: useCasePayload.thread_id
+        });
+
+        expect(mockCommentsRepository.isCommentExist).toHaveBeenCalledWith({
+            comment_id: useCasePayload.comment_id
+        });
+
+        expect(mockRepliesRepository.isReplyExist).toHaveBeenCalledWith({
+            reply_id: useCasePayload.reply_id
+        });
+
+        expect(mockRepliesRepository.isTheRightOwner).toHaveBeenCalledWith({
+            reply_id: useCasePayload.reply_id,
+            user_id: useCasePayload.user_id
+        });
+
         expect(mockRepliesRepository.deleteReply).toHaveBeenCalledWith({
             user_id: useCasePayload.user_id,
             thread_id: useCasePayload.thread_id,
