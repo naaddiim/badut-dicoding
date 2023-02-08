@@ -3,3 +3,5 @@ package-lock.json
 .idea
 config/database/test.json
 coverage
+Implementasi-CI_CD-Security-Dicoding.pem
+.env
