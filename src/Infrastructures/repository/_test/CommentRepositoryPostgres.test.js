@@ -315,4 +315,101 @@ describe('CommentRepositoryPostgres', () => {
             ).rejects.toThrow(AuthorizationError);
         });
     });
+    describe("updateLike function", () => {
+        it("Should increment likeCount correctly", async () => {
+            // Arrange
+            const fakeIdGenerator = () => "56789";
+            const threadRepositoryPostgres = new ThreadRepositoryPostgres(
+                pool,
+                fakeIdGenerator
+            );
+            const commentsRepositoryPostgres = new CommentRepositoryPostgres(
+                pool,
+                fakeIdGenerator
+            );
+            // add thread
+            const addThread = {
+                user_id: "user-12345",
+                title: "a new thread",
+                body: "body of a new thread",
+            };
+            await threadRepositoryPostgres.addThread(addThread);
+            // add comment
+            const addComment = {
+                user_id: "user-12345",
+                thread_id: "thread-56789",
+                content: "a new comment",
+            };
+            await commentsRepositoryPostgres.addComment(addComment);
+            const oldCommentLike = await ThreadsTableTestHelper.findCommentsById("comment-56789");
+            // Action
+            // add likes to comment
+            const addCommentLikes = {
+                user_id: "user-12345",
+                thread_id: "thread-56789",
+                comment_id: "comment-56789",
+            };
+            await commentsRepositoryPostgres.updateLike(addCommentLikes);
+            const newCommentLike = await ThreadsTableTestHelper.findCommentsById("comment-56789");
+
+            // Assert
+            expect(oldCommentLike).toHaveLength(1);
+            expect(oldCommentLike[0].likes).toEqual(0);
+            expect(newCommentLike).toHaveLength(1);
+            expect(newCommentLike[0].likes).toEqual(1);
+        });
+        it("Should decrement likeCount correctly", async () => {
+            // Arrange
+            const fakeIdGenerator = () => "56789";
+            const threadRepositoryPostgres = new ThreadRepositoryPostgres(
+                pool,
+                fakeIdGenerator
+            );
+            const commentsRepositoryPostgres = new CommentRepositoryPostgres(
+                pool,
+                fakeIdGenerator
+            );
+            // add thread
+            const addThread = {
+                user_id: "user-12345",
+                title: "a new thread",
+                body: "body of a new thread",
+            };
+            await threadRepositoryPostgres.addThread(addThread);
+            // add comment
+            const addComment = {
+                user_id: "user-12345",
+                thread_id: "thread-56789",
+                content: "a new comment",
+            };
+            await commentsRepositoryPostgres.addComment(addComment);
+            const oldCommentLike = await ThreadsTableTestHelper.findCommentsById("comment-56789");
+            // Action
+            // add likes to comment
+            const addCommentLikes = {
+                user_id: "user-12345",
+                thread_id: "thread-56789",
+                comment_id: "comment-56789",
+            };
+            await commentsRepositoryPostgres.updateLike(addCommentLikes);
+            const newCommentLike = await ThreadsTableTestHelper.findCommentsById("comment-56789");
+
+            // unlikes the comment
+            const removeCommentLikes = {
+                user_id: "user-12345",
+                thread_id: "thread-56789",
+                comment_id: "comment-56789",
+            };
+            await commentsRepositoryPostgres.updateLike(removeCommentLikes);
+            const afterUnlike = await ThreadsTableTestHelper.findCommentsById("comment-56789");
+
+            // Assert
+            expect(oldCommentLike).toHaveLength(1);
+            expect(oldCommentLike[0].likes).toEqual(0);
+            expect(newCommentLike).toHaveLength(1);
+            expect(newCommentLike[0].likes).toEqual(1);
+            expect(afterUnlike).toHaveLength(1);
+            expect(afterUnlike[0].likes).toEqual(0);
+        });
+    });
 });

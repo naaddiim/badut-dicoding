@@ -15,6 +15,14 @@ const routes = (handler) => ([
       auth: "apiforum_jwt",
     },
   },
+  {
+    method: 'PUT',
+    path: '/threads/{threadId}/comments/{commentId}/likes',
+    handler: handler.likeCommentHandler,
+    options: {
+      auth: "apiforum_jwt",
+    },
+  },
 
 ]);
 

@@ -14,6 +14,30 @@ class CommentRepository {
     async deleteComment({ user_id, thread_id, comment_id }) {
         throw new Error('COMMENT_REPOSITORY.METHOD_NOT_IMPLEMENTED');
     }
+
+    async addUserLike({ user_id, thread_id, comment_id }) {
+        throw new Error('COMMENT_REPOSITORY.METHOD_NOT_IMPLEMENTED');
+    }
+
+    async deleteUserLike({ user_id, thread_id, comment_id }) {
+        throw new Error('COMMENT_REPOSITORY.METHOD_NOT_IMPLEMENTED');
+    }
+
+    async incrementLike({ thread_id, comment_id }) {
+        throw new Error('COMMENT_REPOSITORY.METHOD_NOT_IMPLEMENTED');
+    }
+
+    async decrementLike({ thread_id, comment_id }) {
+        throw new Error('COMMENT_REPOSITORY.METHOD_NOT_IMPLEMENTED');
+    }
+
+    async isUserLike({ user_id, thread_id, comment_id }) {
+        throw new Error('COMMENT_REPOSITORY.METHOD_NOT_IMPLEMENTED');
+    }
+
+    async updateLike({ user_id, thread_id, comment_id }) {
+        throw new Error('COMMENT_REPOSITORY.METHOD_NOT_IMPLEMENTED');
+    }
 }
 
 module.exports = CommentRepository;

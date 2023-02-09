@@ -44,6 +44,7 @@ class ThreadRepositoryPostgres extends ThreadRepository {
                     c.date AS c_date,
                     c.is_delete AS c_is_delete,
                     c.reply_on_comment AS c_reply_comment_id,
+                    c.likes AS c_like,
                     uc.username AS c_username
                   FROM threads t
                   JOIN users u ON t.owner = u.id

@@ -29,6 +29,7 @@ describe('DetailThreadUseCase', () => {
                 c_is_delete: false,
                 c_reply_comment_id: null,
                 c_username: "dicoding",
+                c_like: 3,
             },
             {
                 t_id: "thread-12345",
@@ -42,6 +43,7 @@ describe('DetailThreadUseCase', () => {
                 c_is_delete: true,
                 c_reply_comment_id: null,
                 c_username: "badut kelas",
+                c_like: 0,
             },
             {
                 t_id: "thread-12345",
@@ -55,6 +57,7 @@ describe('DetailThreadUseCase', () => {
                 c_is_delete: false,
                 c_reply_comment_id: "comment-45678",
                 c_username: "badut kelas",
+                c_like: 7,
             },
             {
                 t_id: "thread-12345",
@@ -68,6 +71,7 @@ describe('DetailThreadUseCase', () => {
                 c_is_delete: true,
                 c_reply_comment_id: "comment-45678",
                 c_username: "orang Kedua",
+                c_like: 0,
             },
         ];
         const expectedDetailThread = new Thread({
@@ -82,18 +86,21 @@ describe('DetailThreadUseCase', () => {
                     username: "dicoding",
                     content: "komen pertama",
                     date: commentDate,
+                    likeCount: 3,
                     replies: [
                         new Reply({
                             id: "reply-12345",
                             username: "badut kelas",
                             content: "reply pertama",
                             date: replyDate,
+                            likeCount: 7,
                         }),
                         new Reply({
                             id: "reply-45678",
                             username: "orang Kedua",
                             content: "**balasan telah dihapus**",
                             date: replyDate,
+                            likeCount: 0,
                         }),
                     ],
                 }),
@@ -102,6 +109,7 @@ describe('DetailThreadUseCase', () => {
                     username: "badut kelas",
                     content: "**komentar telah dihapus**",
                     date: commentDate,
+                    likeCount: 0,
                     replies: [],
                 }),
             ],

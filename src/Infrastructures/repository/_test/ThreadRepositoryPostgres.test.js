@@ -107,7 +107,8 @@ describe('ThreadRepositoryPostgres', () => {
                     c_date: getComment.date,
                     c_is_delete: false,
                     c_reply_comment_id: null,
-                    c_username: 'dicoding'
+                    c_username: 'dicoding',
+                    c_like: 0,
                 },
                 {
                     t_id: 'thread-12345',
@@ -120,7 +121,8 @@ describe('ThreadRepositoryPostgres', () => {
                     c_date: getReply.date,
                     c_is_delete: false,
                     c_reply_comment_id: 'comment-12345',
-                    c_username: 'dicoding'
+                    c_username: 'dicoding',
+                    c_like: 0,
                 }
             ];
             // Action
