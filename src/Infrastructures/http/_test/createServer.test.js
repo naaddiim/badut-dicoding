@@ -1,7 +1,6 @@
 const createServer = require('../createServer');
 const container = require('../../container');
 const pool = require('../../database/postgres/pool');
-const AuthenticationTokenManager = require('../../../Applications/security/AuthenticationTokenManager');
 const UsersTableTestHelper = require('../../../../tests/UsersTableTestHelper');
 const ServerTestHelper = require('../../../../tests/ServerTestHelper');
 const AuthenticationsTableTestHelper = require('../../../../tests/AuthenticationsTableTestHelper');
@@ -1020,6 +1019,254 @@ describe("HTTP server", () => {
       expect(commentsBeforeDelete[0].is_delete).toEqual(false);
       expect(commentsAfterDelete).toHaveLength(1);
       expect(commentsAfterDelete[0].is_delete).toEqual(false);
+    });
+  });
+
+  describe("when DELETE /threads/{threadId}/comments/{commentId}/replies/{replyId}", () => {
+    it("should successfully delete reply on comment", async () => {
+      // Arrange
+      const server = await createServer(container);
+      const accessToken = await ServerTestHelper.getAccessToken(server);
+
+      // add thread
+      const addThreadPayload = {
+        title: "judul thread",
+        body: "body thread",
+      };
+      const addedThreadResponse = await server.inject({
+        method: "POST",
+        url: "/threads",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        payload: addThreadPayload,
+      });
+      const { status: addedThreadResponseStatus,
+        data: { addedThread }, } = JSON.parse(addedThreadResponse.payload);
+
+      // add comment
+      const addCommentPayload = {
+        content: `Komen baru pada thread ${addedThread.id}`,
+      };
+      const addedCommentResponse = await server.inject({
+        method: "POST",
+        url: `/threads/${addedThread.id}/comments`,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        payload: addCommentPayload,
+      });
+      const {
+        status: addedCommentResponseStatus,
+        data: { addedComment }, } = JSON.parse(addedCommentResponse.payload);
+      // add reply
+      const addReplyPayload = {
+        content: `Balasan baru pada komen ${addedComment.id}`,
+      };
+      const addedReplyResponse = await server.inject({
+        method: "POST",
+        url: `/threads/${addedThread.id}/comments/${addedComment.id}/replies`,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        payload: addReplyPayload,
+      });
+      const { status: addedReplyResponseStatus,
+        data: { addedReply }, } = JSON.parse(addedReplyResponse.payload);
+
+      // Action
+      const replyBeforeDelete = await ThreadsTableTestHelper.findCommentsById(addedReply.id);
+      const deleteReplyResponse = await server.inject({
+        method: "DELETE",
+        url: `/threads/${addedThread.id}/comments/${addedComment.id}/replies/${addedReply.id}`,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const { status: deleteReplyResponseStatus } = JSON.parse(deleteReplyResponse.payload);
+      const replyAfterDelete = await ThreadsTableTestHelper.findCommentsById(addedReply.id);
+
+      // Assert
+      expect(addedThreadResponse.statusCode).toEqual(201);
+      expect(addedThreadResponseStatus).toEqual("success");
+      expect(addedCommentResponse.statusCode).toEqual(201);
+      expect(addedCommentResponseStatus).toEqual("success");
+      expect(addedReplyResponse.statusCode).toEqual(201);
+      expect(addedReplyResponseStatus).toEqual("success");
+      expect(deleteReplyResponse.statusCode).toEqual(200);
+      expect(deleteReplyResponseStatus).toEqual("success");
+      expect(replyBeforeDelete).toHaveLength(1);
+      expect(replyBeforeDelete[0].is_delete).toEqual(false);
+      expect(replyAfterDelete).toHaveLength(1);
+      expect(replyAfterDelete[0].is_delete).toEqual(true);
+    });
+    it("should throw NotFound error when replies is not exist", async () => {
+      // Arrange
+      const server = await createServer(container);
+      const accessToken = await ServerTestHelper.getAccessToken(server);
+
+      // add thread
+      const addThreadPayload = {
+        title: "judul thread",
+        body: "body thread",
+      };
+      const addedThreadResponse = await server.inject({
+        method: "POST",
+        url: "/threads",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        payload: addThreadPayload,
+      });
+      const { status: addedThreadResponseStatus,
+        data: { addedThread }, } = JSON.parse(addedThreadResponse.payload);
+
+      // add comment
+      const addCommentPayload = { content: `Komen baru pada thread ${addedThread.id}`, };
+      const addedCommentResponse = await server.inject({
+        method: "POST",
+        url: `/threads/${addedThread.id}/comments`,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        payload: addCommentPayload,
+      });
+      const {
+        status: addedCommentResponseStatus,
+        data: { addedComment },
+      } = JSON.parse(addedCommentResponse.payload);
+
+      // add reply
+      const addReplyPayload = {
+        content: `Balasan baru pada komen ${addedComment.id}`,
+      };
+      const addedReplyResponse = await server.inject({
+        method: "POST",
+        url: `/threads/${addedThread.id}/comments/${addedComment.id}/replies`,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        payload: addReplyPayload,
+      });
+      const {
+        status: addedReplyResponseStatus,
+        data: { addedReply },
+      } = JSON.parse(addedReplyResponse.payload);
+
+      // Action
+      const replyBeforeDelete = await ThreadsTableTestHelper.findCommentsById(addedReply.id);
+      const deleteReplyResponse = await server.inject({
+        method: "DELETE",
+        url: `/threads/${addedThread.id}/comments/${addedComment.id}/replies/xxx`,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const {
+        status: deleteReplyResponseStatus,
+        message: deleteReplyResponseMessage,
+      } = JSON.parse(deleteReplyResponse.payload);
+      const replyAfterDelete = await ThreadsTableTestHelper.findCommentsById(addedReply.id);
+
+      // Assert
+      expect(addedThreadResponse.statusCode).toEqual(201);
+      expect(addedThreadResponseStatus).toEqual("success");
+      expect(addedCommentResponse.statusCode).toEqual(201);
+      expect(addedCommentResponseStatus).toEqual("success");
+      expect(addedReplyResponse.statusCode).toEqual(201);
+      expect(addedReplyResponseStatus).toEqual("success");
+      expect(deleteReplyResponse.statusCode).toEqual(404);
+      expect(deleteReplyResponseStatus).toEqual("fail");
+      expect(deleteReplyResponseMessage).toEqual("Reply tidak ditemukan");
+      expect(replyBeforeDelete).toHaveLength(1);
+      expect(replyBeforeDelete[0].is_delete).toEqual(false);
+      expect(replyAfterDelete).toHaveLength(1);
+      expect(replyAfterDelete[0].is_delete).toEqual(false);
+    });
+    it("should throw authorization error when failed to verify reply owner", async () => {
+      // Arrange
+      const server = await createServer(container);
+      const accessToken = await ServerTestHelper.getAccessToken(server);
+
+      // add thread
+      const addThreadPayload = {
+        title: "judul thread",
+        body: "body thread",
+      };
+      const addedThreadResponse = await server.inject({
+        method: "POST",
+        url: "/threads",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        payload: addThreadPayload,
+      });
+      const { status: addedThreadResponseStatus,
+        data: { addedThread }, } = JSON.parse(addedThreadResponse.payload);
+
+      // add comment
+      const addCommentPayload = {
+        content: `Komen baru thread ${addedThread.id}`,
+      };
+      const addedCommentResponse = await server.inject({
+        method: "POST",
+        url: `/threads/${addedThread.id}/comments`,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        payload: addCommentPayload,
+      });
+      const { status: addedCommentResponseStatus,
+        data: { addedComment }, } = JSON.parse(addedCommentResponse.payload);
+
+      // add reply
+      const addReplyPayload = { content: `Balasan baru pada komen ${addedComment.id}`, };
+      const addedReplyResponse = await server.inject({
+        method: "POST",
+        url: `/threads/${addedThread.id}/comments/${addedComment.id}/replies`,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        payload: addReplyPayload,
+      });
+      const {
+        status: addedReplyResponseStatus,
+        data: { addedReply },
+      } = JSON.parse(addedReplyResponse.payload);
+
+      // Action
+      const otherAccessToken = await ServerTestHelper.getAccessToken(server, {
+        username: "dicodingkwsuper",
+        password: "supersecretpassword",
+        fullname: "Dicoding Kabupaten Bandung",
+      });
+      const replyBeforeDelete = await ThreadsTableTestHelper.findCommentsById(addedReply.id);
+      const deleteReplyResponse = await server.inject({
+        method: "DELETE",
+        url: `/threads/${addedThread.id}/comments/${addedComment.id}/replies/${addedReply.id}`,
+        headers: {
+          Authorization: `Bearer ${otherAccessToken}`,
+        },
+      });
+      const {
+        status: deleteReplyResponseStatus, message: deleteReplyResponseMessage,
+      } = JSON.parse(deleteReplyResponse.payload);
+      const replyAfterDelete = await ThreadsTableTestHelper.findCommentsById(addedReply.id);
+
+      // Assert
+      expect(addedThreadResponse.statusCode).toEqual(201);
+      expect(addedThreadResponseStatus).toEqual("success");
+      expect(addedCommentResponse.statusCode).toEqual(201);
+      expect(addedCommentResponseStatus).toEqual("success");
+      expect(addedReplyResponse.statusCode).toEqual(201);
+      expect(addedReplyResponseStatus).toEqual("success");
+      expect(deleteReplyResponse.statusCode).toEqual(403);
+      expect(deleteReplyResponseStatus).toEqual("fail");
+      expect(deleteReplyResponseMessage).toEqual("bukan replies punya kamu !");
+      expect(replyBeforeDelete).toHaveLength(1);
+      expect(replyBeforeDelete[0].is_delete).toEqual(false);
+      expect(replyAfterDelete).toHaveLength(1);
+      expect(replyAfterDelete[0].is_delete).toEqual(false);
     });
   });
 
