@@ -34,6 +34,7 @@ class DetailThreadUseCase {
                     ? "**komentar telah dihapus**"
                     : comment.c_content,
                 date: comment.c_date,
+                likeCount: comment.c_like,
                 replies: [...replies],
             });
         });
@@ -50,6 +51,7 @@ class DetailThreadUseCase {
                     ? "**balasan telah dihapus**"
                     : reply.c_content,
                 date: reply.c_date,
+                likeCount: reply.c_like,
             });
         });
         return replies;

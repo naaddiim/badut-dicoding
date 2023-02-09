@@ -8,6 +8,7 @@ describe('a Comment entities', () => {
             content: 'a new comment',
             date: new Date(),
             is_deleted: true,
+            likeCount: 1,
             replies: [{}],
         };
 
@@ -23,6 +24,7 @@ describe('a Comment entities', () => {
             content: 'a new comment',
             date: new Date(),
             is_deleted: true,
+            likeCount: 1,
             replies: [{}],
         };
 
@@ -38,6 +40,7 @@ describe('a Comment entities', () => {
             content: 'a new comment',
             date: new Date(),
             is_deleted: true,
+            likeCount: 0,
             replies: [{}],
         };
 
@@ -49,6 +52,7 @@ describe('a Comment entities', () => {
         expect(comment.username).toEqual(payload.username);
         expect(comment.content).toEqual("**komentar telah dihapus**");
         expect(comment.date).toEqual(payload.date);
+        expect(comment.likeCount).toEqual(payload.likeCount);
         expect(comment.replies).toEqual(payload.replies);
     });
 });

@@ -7,6 +7,7 @@ describe('a Reply entities', () => {
             username: 'user-123',
             content: 'a new reply',
             date: new Date(),
+            likeCount: 3,
             is_deleted: true,
         };
 
@@ -21,6 +22,7 @@ describe('a Reply entities', () => {
             username: 'user-123',
             content: 'a new reply',
             date: new Date(),
+            likeCount: 3,
             is_deleted: true,
         };
 
@@ -35,6 +37,7 @@ describe('a Reply entities', () => {
             username: 'user-123',
             content: 'a new reply',
             date: new Date(),
+            likeCount: 0,
             is_deleted: true,
         };
 
@@ -46,5 +49,6 @@ describe('a Reply entities', () => {
         expect(reply.username).toEqual(payload.username);
         expect(reply.content).toEqual("**balasan telah dihapus**");
         expect(reply.date).toEqual(payload.date);
+        expect(reply.likeCount).toEqual(payload.likeCount);
     });
 });
