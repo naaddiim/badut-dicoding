@@ -30,7 +30,7 @@ describe('a Reply entities', () => {
         expect(() => new Reply(payload)).toThrowError('REPLY_ENTITY.NOT_MEET_DATA_TYPE_SPECIFICATION');
     });
 
-    it('should create thread object correctly', () => {
+    it('should create thread object correctly when is_deleted: true', () => {
         // Arrange
         const payload = {
             id: 'comment-123',
@@ -48,6 +48,27 @@ describe('a Reply entities', () => {
         expect(reply.id).toEqual(payload.id);
         expect(reply.username).toEqual(payload.username);
         expect(reply.content).toEqual("**balasan telah dihapus**");
+        expect(reply.date).toEqual(payload.date);
+        expect(reply.likeCount).toEqual(payload.likeCount);
+    });
+    it('should create thread object correctly when is_deleted: false', () => {
+        // Arrange
+        const payload = {
+            id: 'comment-123',
+            username: 'user-123',
+            content: 'a new reply',
+            date: new Date(),
+            likeCount: 0,
+            is_deleted: false,
+        };
+
+        // Action
+        const reply = new Reply(payload);
+
+        // Assert
+        expect(reply.id).toEqual(payload.id);
+        expect(reply.username).toEqual(payload.username);
+        expect(reply.content).toEqual(payload.content);
         expect(reply.date).toEqual(payload.date);
         expect(reply.likeCount).toEqual(payload.likeCount);
     });
