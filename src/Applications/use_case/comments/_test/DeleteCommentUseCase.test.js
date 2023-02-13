@@ -13,12 +13,7 @@ describe('DeleteCommentUseCase', () => {
             thread_id: "somerandomThreadId",
             comment_id: "somerandomCommentId",
         };
-        const expectedDeletedComment = {
-            user_id: useCasePayload.user_id,
-            thread_id: useCasePayload.thread_id,
-            comment_id: useCasePayload.comment_id,
-        };
-
+        
         /** creating dependency of use case */
         const mockCommentsRepository = new CommentRepository();
         const mockThreadsRepository = new ThreadRepository();

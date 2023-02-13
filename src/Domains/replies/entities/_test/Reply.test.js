@@ -4,11 +4,11 @@ describe('a Reply entities', () => {
     it('should throw error when payload did not contain needed property', () => {
         // Arrange
         const payload = {
-            username: 'user-123',
-            content: 'a new reply',
-            date: new Date(),
-            likeCount: 3,
-            is_deleted: true,
+            c_username: 'user-123',
+            c_content: 'a new reply',
+            c_date: new Date(),
+            c_like: 3,
+            c_is_delete: true,
         };
 
         // Action and Assert
@@ -18,12 +18,12 @@ describe('a Reply entities', () => {
     it('should throw error when payload did not meet data type specification', () => {
         // Arrange
         const payload = {
-            id: 123,
-            username: 'user-123',
-            content: 'a new reply',
-            date: new Date(),
-            likeCount: 3,
-            is_deleted: true,
+            c_id: 123,
+            c_username: 'user-123',
+            c_content: 'a new reply',
+            c_date: new Date(),
+            c_like: 3,
+            c_is_delete: true,
         };
 
         // Action and Assert
@@ -33,43 +33,43 @@ describe('a Reply entities', () => {
     it('should create thread object correctly when is_deleted: true', () => {
         // Arrange
         const payload = {
-            id: 'comment-123',
-            username: 'user-123',
-            content: 'a new reply',
-            date: new Date(),
-            likeCount: 0,
-            is_deleted: true,
+            c_id: 'comment-123',
+            c_username: 'user-123',
+            c_content: 'a new reply',
+            c_date: new Date(),
+            c_like: 0,
+            c_is_delete: true,
         };
 
         // Action
         const reply = new Reply(payload);
 
         // Assert
-        expect(reply.id).toEqual(payload.id);
-        expect(reply.username).toEqual(payload.username);
+        expect(reply.id).toEqual(payload.c_id);
+        expect(reply.username).toEqual(payload.c_username);
         expect(reply.content).toEqual("**balasan telah dihapus**");
-        expect(reply.date).toEqual(payload.date);
-        expect(reply.likeCount).toEqual(payload.likeCount);
+        expect(reply.date).toEqual(payload.c_date);
+        expect(reply.likeCount).toEqual(payload.c_like);
     });
     it('should create thread object correctly when is_deleted: false', () => {
         // Arrange
         const payload = {
-            id: 'comment-123',
-            username: 'user-123',
-            content: 'a new reply',
-            date: new Date(),
-            likeCount: 0,
-            is_deleted: false,
+            c_id: 'comment-123',
+            c_username: 'user-123',
+            c_content: 'a new reply',
+            c_date: new Date(),
+            c_like: 0,
+            c_is_delete: false,
         };
 
         // Action
         const reply = new Reply(payload);
 
         // Assert
-        expect(reply.id).toEqual(payload.id);
-        expect(reply.username).toEqual(payload.username);
-        expect(reply.content).toEqual(payload.content);
-        expect(reply.date).toEqual(payload.date);
-        expect(reply.likeCount).toEqual(payload.likeCount);
+        expect(reply.id).toEqual(payload.c_id);
+        expect(reply.username).toEqual(payload.c_username);
+        expect(reply.content).toEqual(payload.c_content);
+        expect(reply.date).toEqual(payload.c_date);
+        expect(reply.likeCount).toEqual(payload.c_like);
     });
 });

@@ -29,8 +29,8 @@ class ThreadsHandler {
     const useCasePayload = {
       thread_id,
     };
-    const query = await detailThreadUseCase.execute(useCasePayload);
-    const thread = detailThreadUseCase.mapValue(query);
+    const thread = await detailThreadUseCase.execute(useCasePayload);
+    // const thread = detailThreadUseCase.mapValue(query);
 
     const response = h.response({
       status: 'success',

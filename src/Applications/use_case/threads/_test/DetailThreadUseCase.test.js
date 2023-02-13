@@ -82,36 +82,34 @@ describe('DetailThreadUseCase', () => {
             date: threadDate,
             comments: [
                 new Comment({
-                    id: "comment-45678",
-                    username: "dicoding",
-                    content: "komen pertama",
-                    date: commentDate,
-                    likeCount: 3,
-                    replies: [
-                        new Reply({
-                            id: "reply-12345",
-                            username: "badut kelas",
-                            content: "reply pertama",
-                            date: replyDate,
-                            likeCount: 7,
-                        }),
-                        new Reply({
-                            id: "reply-45678",
-                            username: "orang Kedua",
-                            content: "**balasan telah dihapus**",
-                            date: replyDate,
-                            likeCount: 0,
-                        }),
-                    ],
-                }),
+                    c_id: "comment-45678",
+                    c_username: "dicoding",
+                    c_content: "komen pertama",
+                    c_date: commentDate,
+                    c_like: 3,
+                }, replies = [
+                    new Reply({
+                        c_id: "reply-12345",
+                        c_username: "badut kelas",
+                        c_content: "reply pertama",
+                        c_date: replyDate,
+                        c_like: 7,
+                    }),
+                    new Reply({
+                        c_id: "reply-45678",
+                        c_username: "orang Kedua",
+                        c_content: "**balasan telah dihapus**",
+                        c_date: replyDate,
+                        c_like: 0,
+                    }),
+                ]),
                 new Comment({
-                    id: "comment-99999",
-                    username: "badut kelas",
-                    content: "**komentar telah dihapus**",
-                    date: commentDate,
-                    likeCount: 0,
-                    replies: [],
-                }),
+                    c_id: "comment-99999",
+                    c_username: "badut kelas",
+                    c_content: "**komentar telah dihapus**",
+                    c_date: commentDate,
+                    c_like: 0,
+                }, replies = []),
             ],
         });
 
@@ -127,11 +125,10 @@ describe('DetailThreadUseCase', () => {
         });
 
         // Action
-        const query = await detailThreadUseCase.execute(useCasePayload);
-        const result = detailThreadUseCase.mapValue(query);
+        const result = await detailThreadUseCase.execute(useCasePayload);
 
         // Assert
-        expect(query).toHaveLength(4);
+        expect(queryResult).toHaveLength(4);
         expect(result).toStrictEqual(expectedDetailThread);
         expect(mockThreadRepository.getDetailThread).toHaveBeenCalledWith({ thread_id: useCasePayload.thread_id, });
     });
