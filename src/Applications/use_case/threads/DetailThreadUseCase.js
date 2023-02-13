@@ -7,10 +7,11 @@ class DetailThreadUseCase {
     }
     async execute(useCasePayload) {
         const { thread_id } = useCasePayload;
-        return await this._threadRepository.getDetailThread({ thread_id });
+        const query = await this._threadRepository.getDetailThread({ thread_id });
+        return this._mapValue(query);
     }
 
-    mapValue = (query) => {
+    _mapValue = (query) => {
         const comments = this._getComments(query);
         const thread = new Thread({
             id: query[0].t_id,
@@ -27,16 +28,7 @@ class DetailThreadUseCase {
         const comments = query.filter((comment) => !comment.c_reply_comment_id).map((comment) => {
             const replies = this._getReplies(query, comment.c_id);
             // map hasil filter
-            return new Comment({
-                id: comment.c_id,
-                username: comment.c_username,
-                content: comment.c_is_delete
-                    ? "**komentar telah dihapus**"
-                    : comment.c_content,
-                date: comment.c_date,
-                likeCount: comment.c_like,
-                replies: [...replies],
-            });
+            return new Comment(comment, replies);
         });
         return comments;
     }
@@ -44,15 +36,7 @@ class DetailThreadUseCase {
     _getReplies(query, comment_id) {
         // filter dari semua comment_id yang didapat mana yang cak cocok dengan reply_comment_id pada reply
         const replies = query.filter((reply) => { return reply.c_reply_comment_id === comment_id; }).map((reply) => {
-            return new Reply({
-                id: reply.c_id,
-                username: reply.c_username,
-                content: reply.c_is_delete
-                    ? "**balasan telah dihapus**"
-                    : reply.c_content,
-                date: reply.c_date,
-                likeCount: reply.c_like,
-            });
+            return new Reply(reply);
         });
         return replies;
     }

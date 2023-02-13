@@ -29,8 +29,8 @@ describe('AddReplyUseCase', () => {
         const mockCommentsRepository = new CommentRepository();
 
         /** mocking needed function */
-        mockThreadsRepository.isThreadExist = jest.fn().mockImplementation(() => Promise.resolve());
-        mockCommentsRepository.isCommentExist = jest.fn().mockImplementation(() => Promise.resolve());
+        mockThreadsRepository.isThreadExist = jest.fn(() => Promise.resolve());
+        mockCommentsRepository.isCommentExist = jest.fn(() => Promise.resolve());
         mockRepliesRepository.addReply = jest.fn()
             .mockImplementation(() => Promise.resolve(expectedAddedReply));
 
@@ -46,6 +46,13 @@ describe('AddReplyUseCase', () => {
         const addedReply = await addReplyUseCase.execute(user_id, thread_id, comment_id, replyPayload);
 
         // Assert
+        expect(mockThreadsRepository.isThreadExist).toHaveBeenCalledWith({
+            thread_id: useCasePayload.thread_id,
+        });
+        expect(mockCommentsRepository.isCommentExist).toHaveBeenCalledWith({
+            comment_id: useCasePayload.comment_id,
+        });
+
         expect(addedReply).toStrictEqual(expectedAddedReply);
         expect(mockRepliesRepository.addReply).toHaveBeenCalledWith({
             user_id: useCasePayload.user_id,
